@@ -59,7 +59,7 @@ const api = {
     me: () => apiClient.get('/auth/me')
   },
 
-  // Leagues
+  // Leagues (Old single-player)
   leagues: {
     getAll: (userId) => apiClient.get(`/leagues${userId ? `?userId=${userId}` : ''}`),
     getById: (id) => apiClient.get(`/leagues/${id}`),
@@ -67,6 +67,24 @@ const api = {
     update: (id, data) => apiClient.put(`/leagues/${id}`, data),
     advance: (id, days) => apiClient.post(`/leagues/${id}/advance`, { days }),
     getStorylines: (id, limit = 10) => apiClient.get(`/leagues/${id}/storylines?limit=${limit}`)
+  },
+
+  // Leagues V2 (NEW Multiplayer)
+  leaguesV2: {
+    create: (data) => apiClient.post('/leagues-v2', data),
+    getById: (id) => apiClient.get(`/leagues-v2/${id}`),
+    importPlayers: (id) => apiClient.post(`/leagues-v2/${id}/import-players`),
+    getTeams: (id) => apiClient.get(`/leagues-v2/${id}/teams`),
+    updateSettings: (id, settings) => apiClient.put(`/leagues-v2/${id}/settings`, settings)
+  },
+
+  // Invitations (NEW)
+  invitations: {
+    create: (leagueId, email, role = 'member') => apiClient.post('/invitations', { leagueId, email, role }),
+    getByLeague: (leagueId) => apiClient.get(`/invitations/league/${leagueId}`),
+    getByUser: (userId) => apiClient.get(`/invitations/user/${userId}`),
+    accept: (token) => apiClient.post(`/invitations/accept/${token}`),
+    decline: (token) => apiClient.post(`/invitations/decline/${token}`)
   },
 
   // Teams

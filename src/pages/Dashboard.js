@@ -95,13 +95,22 @@ const Dashboard = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Your Leagues</h2>
-          <Link
-            to="/leagues/create"
-            className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-          >
-            <Plus className="h-5 w-5" />
-            Create League
-          </Link>
+          <div className="flex gap-3">
+            <Link
+              to="/multiplayer/create"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all font-semibold shadow-lg"
+            >
+              <Users className="h-5 w-5" />
+              Create Multiplayer League
+            </Link>
+            <Link
+              to="/leagues/create"
+              className="inline-flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors font-semibold"
+            >
+              <Plus className="h-5 w-5" />
+              Single Player
+            </Link>
+          </div>
         </div>
 
         {leagues.length === 0 ? (
