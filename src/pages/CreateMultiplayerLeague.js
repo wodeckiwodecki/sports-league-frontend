@@ -45,7 +45,7 @@ const CreateMultiplayerLeague = () => {
       const leagueResponse = await api.leaguesV2.create({
         name: formData.name,
         sport: formData.sport,
-        commissionerId: user.id,
+        userId: user.id,  // Add userId here
         maxTeams: formData.maxTeams,
         settings: {
           salaryCap: formData.salaryCap,
@@ -70,7 +70,7 @@ const CreateMultiplayerLeague = () => {
       // Step 3: Navigate to league
       setStep(3);
       setTimeout(() => {
-        navigate(`/multiplayer-league/${leagueId}`);
+        navigate(`/league/${leagueId}`);
       }, 1500);
 
     } catch (err) {
@@ -93,7 +93,7 @@ const CreateMultiplayerLeague = () => {
             </h2>
             <p className="text-gray-400">
               {step === 1 && 'Setting up your league structure'}
-              {step === 2 && 'Loading 1,195 active MLB players into your league'}
+              {step === 2 && 'Loading active MLB players into your league'}
               {step === 3 && 'Redirecting to your league...'}
             </p>
           </div>
@@ -119,7 +119,7 @@ const CreateMultiplayerLeague = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Info */}
+          {/* Keep all the existing form fields exactly as they are */}
           <div className="bg-gray-800 rounded-lg p-6">
             <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
               <Trophy className="h-5 w-5 mr-2" />
@@ -177,7 +177,7 @@ const CreateMultiplayerLeague = () => {
             </div>
           </div>
 
-          {/* Financial Settings */}
+          {/* Financial Settings - keeping existing */}
           <div className="bg-gray-800 rounded-lg p-6">
             <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
               <DollarSign className="h-5 w-5 mr-2" />
@@ -219,7 +219,7 @@ const CreateMultiplayerLeague = () => {
             </div>
           </div>
 
-          {/* Draft Settings */}
+          {/* Draft Settings - keeping existing */}
           <div className="bg-gray-800 rounded-lg p-6">
             <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
               <Users className="h-5 w-5 mr-2" />
@@ -292,7 +292,7 @@ const CreateMultiplayerLeague = () => {
             </div>
           </div>
 
-          {/* Season Settings */}
+          {/* Season Settings - keeping existing */}
           <div className="bg-gray-800 rounded-lg p-6">
             <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
               <Calendar className="h-5 w-5 mr-2" />
@@ -352,7 +352,7 @@ const CreateMultiplayerLeague = () => {
           <div className="flex justify-end space-x-4">
             <button
               type="button"
-              onClick={() => navigate('/leagues')}
+              onClick={() => navigate('/dashboard')}
               className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
             >
               Cancel
