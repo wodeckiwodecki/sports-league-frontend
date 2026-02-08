@@ -71,8 +71,8 @@ const api = {
 
   // Leagues V2 (NEW Multiplayer)
   leaguesV2: {
-    create: (data) => apiClient.post('/leagues-v2', data),
-    getById: (id) => apiClient.get(`/leagues-v2/${id}`),
+    create: (data) => apiClient.post('/leagues-v2/create-multiplayer', data),
+    getById: (id) => apiClient.get(`/leagues-v2/${id}/details`),
     importPlayers: (id) => apiClient.post(`/leagues-v2/${id}/import-players`),
     getTeams: (id) => apiClient.get(`/leagues-v2/${id}/teams`),
     updateSettings: (id, settings) => apiClient.put(`/leagues-v2/${id}/settings`, settings)
