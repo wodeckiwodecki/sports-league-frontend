@@ -11,7 +11,6 @@ const DraftRoom = () => {
   
   const [draftState, setDraftState] = useState(null);
   const [picks, setPicks] = useState([]);
-  const [teams, setTeams] = useState([]);
   const [availablePlayers, setAvailablePlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
@@ -24,7 +23,6 @@ const DraftRoom = () => {
     loadDraftState();
     loadAvailablePlayers();
     
-    // Poll for updates every 3 seconds
     const interval = setInterval(() => {
       loadDraftState();
     }, 3000);
@@ -34,13 +32,12 @@ const DraftRoom = () => {
 
   const loadDraftState = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/draft/${leagueId}/state`, {
+      const response = await axios.get(`${API_URL}/api/draft/${leagueId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      setDraftState(response.data.state);
+      setDraftState(response.data.draftState);
       setPicks(response.data.picks || []);
-      setTeams(response.data.teams || []);
       setLoading(false);
     } catch (error) {
       console.error('Error loading draft state:', error);
@@ -55,7 +52,7 @@ const DraftRoom = () => {
         params: { position: positionFilter !== 'ALL' ? positionFilter : null, search: searchTerm }
       });
       
-      setAvailablePlayers(response.data);
+      setAvailablePlayers(response.data.players || response.data || []);
     } catch (error) {
       console.error('Error loading players:', error);
     }
@@ -63,9 +60,10 @@ const DraftRoom = () => {
 
   const startDraft = async () => {
     try {
-      await axios.post(`${API_URL}/api/draft/${leagueId}/start`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.post(`${API_URL}/api/draft/start`, 
+        { leagueId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       
       loadDraftState();
       alert('Draft started!');
@@ -77,8 +75,8 @@ const DraftRoom = () => {
 
   const makePick = async (playerId) => {
     try {
-      await axios.post(`${API_URL}/api/draft/${leagueId}/pick`, 
-        { playerId },
+      await axios.post(`${API_URL}/api/draft/pick`, 
+        { leagueId, playerId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -120,7 +118,6 @@ const DraftRoom = () => {
     );
   }
 
-  const currentTeam = teams.find(t => t.id === draftState.current_team_id);
   const draftComplete = draftState.status === 'completed';
 
   return (
@@ -131,56 +128,45 @@ const DraftRoom = () => {
           <p className="text-green-600 text-xl mt-2">Draft Complete!</p>
         ) : (
           <div className="mt-2">
-            <p className="text-lg">
-              Round {draftState.current_round} - Pick {draftState.current_pick}
-            </p>
-            <p className="text-blue-600 font-semibold">
-              On the Clock: {currentTeam?.name || 'Unknown Team'}
-            </p>
+            <p className="text-lg">Pick {draftState.current_pick}</p>
           </div>
         )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Draft Board */}
         <div className="lg:col-span-2">
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-2xl font-bold mb-4">Draft Board</h2>
             <div className="space-y-2 max-h-96 overflow-y-auto">
-              {picks.filter(p => p.player_id).map((pick) => (
-                <div key={pick.id} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+              {picks.map((pick, idx) => (
+                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded">
                   <div className="flex items-center space-x-4">
-                    <span className="font-bold text-gray-500">#{pick.pick_number}</span>
-                    <span className="text-sm text-gray-600">Rd {pick.round}</span>
-                    <span className="font-semibold">{pick.player_name}</span>
-                    <span className="text-sm text-gray-600">{pick.position}</span>
+                    <span className="font-bold text-gray-500">#{pick.pick_number || idx + 1}</span>
+                    <span className="font-semibold">{pick.player_name || 'Pending...'}</span>
                   </div>
-                  <span className="text-sm text-blue-600">{pick.team_name}</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Available Players */}
         <div className="lg:col-span-1">
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-2xl font-bold mb-4">Available Players</h2>
             
-            {/* Filters */}
             <div className="mb-4 space-y-3">
               <input
                 type="text"
                 placeholder="Search players..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
               />
               
               <select
                 value={positionFilter}
                 onChange={(e) => setPositionFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
               >
                 {positions.map(pos => (
                   <option key={pos} value={pos}>{pos}</option>
@@ -188,9 +174,8 @@ const DraftRoom = () => {
               </select>
             </div>
 
-            {/* Player List */}
             <div className="space-y-2 max-h-96 overflow-y-auto">
-              {availablePlayers.map((player) => (
+              {availablePlayers.slice(0, 50).map((player) => (
                 <div
                   key={player.id}
                   onClick={() => setSelectedPlayer(player)}
@@ -211,7 +196,6 @@ const DraftRoom = () => {
               ))}
             </div>
 
-            {/* Draft Button */}
             {selectedPlayer && !draftComplete && (
               <button
                 onClick={() => makePick(selectedPlayer.id)}
