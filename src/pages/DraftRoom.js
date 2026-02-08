@@ -16,6 +16,7 @@ const DraftRoom = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [positionFilter, setPositionFilter] = useState('ALL');
+  const [initializing, setInitializing] = useState(false);
   
   const positions = ['ALL', 'C', 'PF', 'SF', 'SG', 'PG', 'P', '1B', '2B', '3B', 'SS', 'OF'];
 
@@ -58,8 +59,23 @@ const DraftRoom = () => {
     }
   };
 
-  const startDraft = async () => {
+  const initializeAndStartDraft = async () => {
+    setInitializing(true);
     try {
+      // Step 1: Initialize
+      await axios.post(`${API_URL}/api/draft/initialize`, 
+        { 
+          leagueId,
+          settings: {
+            rounds: 25,
+            type: 'snake',
+            timePerPick: 90
+          }
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      // Step 2: Start
       await axios.post(`${API_URL}/api/draft/start`, 
         { leagueId },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -70,6 +86,8 @@ const DraftRoom = () => {
     } catch (error) {
       console.error('Error starting draft:', error);
       alert(error.response?.data?.error || 'Failed to start draft');
+    } finally {
+      setInitializing(false);
     }
   };
 
@@ -101,17 +119,18 @@ const DraftRoom = () => {
     );
   }
 
-  if (!draftState) {
+  if (!draftState || draftState.status === 'not_started') {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">Draft Room</h1>
         <div className="bg-white shadow rounded-lg p-6">
-          <p className="text-gray-600 mb-4">Draft has not been started yet.</p>
+          <p className="text-gray-600 mb-4">Ready to start your draft?</p>
           <button
-            onClick={startDraft}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+            onClick={initializeAndStartDraft}
+            disabled={initializing}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
           >
-            Start Draft
+            {initializing ? 'Starting Draft...' : 'Start Draft'}
           </button>
         </div>
       </div>
@@ -129,6 +148,7 @@ const DraftRoom = () => {
         ) : (
           <div className="mt-2">
             <p className="text-lg">Pick {draftState.current_pick}</p>
+            <p className="text-blue-600">Status: {draftState.status}</p>
           </div>
         )}
       </div>
@@ -138,14 +158,18 @@ const DraftRoom = () => {
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-2xl font-bold mb-4">Draft Board</h2>
             <div className="space-y-2 max-h-96 overflow-y-auto">
-              {picks.map((pick, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                  <div className="flex items-center space-x-4">
-                    <span className="font-bold text-gray-500">#{pick.pick_number || idx + 1}</span>
-                    <span className="font-semibold">{pick.player_name || 'Pending...'}</span>
+              {picks.length === 0 ? (
+                <p className="text-gray-500">No picks yet...</p>
+              ) : (
+                picks.map((pick, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div className="flex items-center space-x-4">
+                      <span className="font-bold text-gray-500">#{pick.pick_number || idx + 1}</span>
+                      <span className="font-semibold">{pick.player_name || 'Pending...'}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
