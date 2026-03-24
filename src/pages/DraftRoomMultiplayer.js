@@ -26,30 +26,36 @@ const DraftRoomMultiplayer = () => {
     return () => clearInterval(interval);
   }, [id]);
 
+  // Derive current pick object from draft_order + current_pick index
+  const getCurrentPickObj = () => {
+    if (!draftState?.draft_order || !draftState?.current_pick) return null;
+    return draftState.draft_order[draftState.current_pick - 1] || null;
+  };
+
   // AI autopick for non-user turns
   useEffect(() => {
     if (!draftState || !league || autoPickLoading) return;
-    const currentPick = draftState.current_pick || draftState.currentPick;
-    if (!currentPick) return;
+    if (draftState.status !== 'in_progress') return;
+    const pickObj = getCurrentPickObj();
+    if (!pickObj) return;
     const userTeam = teams.find(t => t.user_id === user?.id);
-    const isUserTurn = userTeam && (currentPick.team_id === userTeam.id || currentPick === userTeam.id);
+    const isUserTurn = userTeam && pickObj.team_id === userTeam.id;
     if (isUserTurn) return;
 
     // Not user's turn — trigger autopick after short delay
     const timer = setTimeout(async () => {
       setAutoPickLoading(true);
       try {
-        const teamId = currentPick.team_id || currentPick;
-        await api.draft.autoPick(id, teamId);
+        await api.draft.autoPick(id, pickObj.team_id);
         await loadDraftData();
       } catch (err) {
         console.error('Autopick error:', err);
       } finally {
         setAutoPickLoading(false);
       }
-    }, 1500);
+    }, 1200);
     return () => clearTimeout(timer);
-  }, [draftState?.current_pick, draftState?.currentPick]);
+  }, [draftState?.current_pick]);
   
   const loadDraftData = async () => {
     try {
@@ -67,10 +73,23 @@ const DraftRoomMultiplayer = () => {
       setLeague(leagueData);
       setTeams(teams);
       setDraftState(draftRes.data);
-      setAvailablePlayers(playersRes.data || []);
 
-      if (draftRes.data?.picks) {
-        setDraftPicks(draftRes.data.picks);
+      // Filter available players to only undrafted ones
+      const draft = draftRes.data;
+      const allPlayers = playersRes.data || [];
+      if (draft?.available_players?.length > 0) {
+        const availableSet = new Set(draft.available_players);
+        setAvailablePlayers(allPlayers.filter(p => availableSet.has(p.id)));
+      } else {
+        setAvailablePlayers(allPlayers);
+      }
+
+      if (draft?.picks) {
+        setDraftPicks(draft.picks);
+      } else {
+        // Reconstruct picks from team data
+        const allPicks = (draft?.teams || []).flatMap(t => (t.picks || []).map(p => ({ ...p, team_id: t.id })));
+        setDraftPicks(allPicks);
       }
 
       setLoading(false);
@@ -111,18 +130,21 @@ const DraftRoomMultiplayer = () => {
   };
   
   const isMyPick = () => {
-    if (!draftState?.currentPick || !user) return false;
+    if (draftState?.status !== 'in_progress' || !user) return false;
+    const pickObj = getCurrentPickObj();
+    if (!pickObj) return false;
     const userTeam = teams.find(t => t.user_id === user?.id);
-    return draftState.currentPick.team_id === userTeam?.id;
+    return pickObj.team_id === userTeam?.id;
   };
-  
+
   const getCurrentPickInfo = () => {
-    if (!draftState?.currentPick) return null;
-    const team = teams.find(t => t.id === draftState.currentPick.team_id);
+    const pickObj = getCurrentPickObj();
+    if (!pickObj) return null;
+    const team = teams.find(t => t.id === pickObj.team_id);
     return {
-      round: draftState.currentPick.round,
-      pick: draftState.currentPick.overall_pick,
-      team: team
+      round: pickObj.round,
+      pick: draftState.current_pick,
+      team
     };
   };
   
