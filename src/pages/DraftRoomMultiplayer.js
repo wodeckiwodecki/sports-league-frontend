@@ -27,22 +27,26 @@ const DraftRoomMultiplayer = () => {
   
   const loadDraftData = async () => {
     try {
-      const [leagueRes, teamsRes, draftRes, playersRes] = await Promise.all([
-        api.leaguesV2.getById(id),
-        api.leaguesV2.getTeams(id),
+      // Load league first so we know the sport before fetching players
+      const leagueRes = await api.leaguesV2.getById(id);
+      const leagueData = leagueRes.data?.league || leagueRes.data;
+      const teams = leagueRes.data?.teams || [];
+      const sport = leagueData?.sport || 'MLB';
+
+      const [draftRes, playersRes] = await Promise.all([
         api.draft.getState(id).catch(() => ({ data: null })),
-        api.players.getAll({ sport: leagueRes.data?.sport || 'MLB', limit: 2000 })
+        api.players.getAll({ sport, limit: 2000 })
       ]);
-      
-      setLeague(leagueRes.data);
-      setTeams(teamsRes.data);
+
+      setLeague(leagueData);
+      setTeams(teams);
       setDraftState(draftRes.data);
-      setAvailablePlayers(playersRes.data);
-      
+      setAvailablePlayers(playersRes.data || []);
+
       if (draftRes.data?.picks) {
         setDraftPicks(draftRes.data.picks);
       }
-      
+
       setLoading(false);
     } catch (error) {
       console.error('Error loading draft data:', error);
