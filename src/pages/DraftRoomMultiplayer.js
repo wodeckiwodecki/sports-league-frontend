@@ -18,12 +18,38 @@ const DraftRoomMultiplayer = () => {
   const [positionFilter, setPositionFilter] = useState('ALL');
   const [loading, setLoading] = useState(true);
   const [pickLoading, setPickLoading] = useState(false);
-  
+  const [autoPickLoading, setAutoPickLoading] = useState(false);
+
   useEffect(() => {
     loadDraftData();
     const interval = setInterval(loadDraftData, 5000);
     return () => clearInterval(interval);
   }, [id]);
+
+  // AI autopick for non-user turns
+  useEffect(() => {
+    if (!draftState || !league || autoPickLoading) return;
+    const currentPick = draftState.current_pick || draftState.currentPick;
+    if (!currentPick) return;
+    const userTeam = teams.find(t => t.user_id === user?.id);
+    const isUserTurn = userTeam && (currentPick.team_id === userTeam.id || currentPick === userTeam.id);
+    if (isUserTurn) return;
+
+    // Not user's turn — trigger autopick after short delay
+    const timer = setTimeout(async () => {
+      setAutoPickLoading(true);
+      try {
+        const teamId = currentPick.team_id || currentPick;
+        await api.draft.autoPick(id, teamId);
+        await loadDraftData();
+      } catch (err) {
+        console.error('Autopick error:', err);
+      } finally {
+        setAutoPickLoading(false);
+      }
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [draftState?.current_pick, draftState?.currentPick]);
   
   const loadDraftData = async () => {
     try {
@@ -185,7 +211,14 @@ const DraftRoomMultiplayer = () => {
                   {myPick && ' - YOUR PICK!'}
                 </p>
               </div>
-              
+
+              {autoPickLoading && !myPick && (
+                <div className="flex items-center gap-3 bg-purple-900/30 border border-purple-500/30 rounded-lg px-4 py-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-400"></div>
+                  <span className="text-purple-300 text-sm font-medium">AI is picking…</span>
+                </div>
+              )}
+
               {myPick && (
                 <div className="text-right">
                   <Clock className="h-12 w-12 text-yellow-400 animate-pulse" />

@@ -14,6 +14,7 @@ const MultiplayerLeagueDashboard = () => {
   
   const [league, setLeague] = useState(null);
   const [teams, setTeams] = useState([]);
+  const [storylines, setStorylines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
@@ -42,6 +43,15 @@ const MultiplayerLeagueDashboard = () => {
         const teamsRes = await api.leaguesV2.getTeams(id);
         setTeams(teamsRes.data);
       }
+
+      // Load storylines
+      try {
+        const storylinesRes = await api.leagues.getStorylines(id);
+        setStorylines((storylinesRes.data || []).slice(0, 5));
+      } catch (e) {
+        // storylines may not exist yet, that's fine
+      }
+
       setLoading(false);
     } catch (error) {
       console.error('❌ Error loading league:', error);
@@ -301,24 +311,34 @@ const MultiplayerLeagueDashboard = () => {
               </div>
             </div>
 
-            {/* Activity Feed */}
+            {/* Storylines Feed */}
             <div className="bg-gray-800 rounded-lg p-6">
               <h2 className="text-xl font-bold text-white mb-4 flex items-center">
                 <Calendar className="h-5 w-5 mr-2" />
-                Recent Activity
+                League News
               </h2>
-              <div className="space-y-3 text-sm">
-                <div className="text-gray-400">
-                  <p className="text-white mb-1">League Created</p>
-                  <p className="text-xs">
-                    {new Date(league.created_at).toLocaleDateString()}
-                  </p>
+              {storylines.length === 0 ? (
+                <div className="space-y-3 text-sm">
+                  <div className="text-gray-400">
+                    <p className="text-white mb-1">League Created</p>
+                    <p className="text-xs">{new Date(league.created_at).toLocaleDateString()}</p>
+                  </div>
+                  <div className="text-gray-400">
+                    <p className="text-white mb-1">{league.sport} Players Ready</p>
+                    <p className="text-xs">Player pool loaded and draft-ready</p>
+                  </div>
                 </div>
-                <div className="text-gray-400">
-                  <p className="text-white mb-1">Players Imported</p>
-                  <p className="text-xs">{league.sport} player pool ready</p>
+              ) : (
+                <div className="space-y-4">
+                  {storylines.map((s, i) => (
+                    <div key={i} className="border-l-2 border-blue-500/50 pl-3">
+                      <p className="text-white text-sm font-medium">{s.headline || s.title}</p>
+                      {s.content && <p className="text-gray-400 text-xs mt-1 line-clamp-2">{s.content}</p>}
+                      <p className="text-gray-500 text-xs mt-1">Day {s.day} · Season {s.season}</p>
+                    </div>
+                  ))}
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

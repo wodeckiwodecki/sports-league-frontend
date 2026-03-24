@@ -59,6 +59,7 @@ function AppRoutes() {
         <Route path="/leagues/create" element={<PrivateRoute><CreateLeague /></PrivateRoute>} />
         <Route path="/league/:leagueId" element={<PrivateRoute><LeagueDashboard /></PrivateRoute>} />
         <Route path="/league/:leagueId/team/:teamId" element={<PrivateRoute><TeamRoster /></PrivateRoute>} />
+        <Route path="/team/:teamId" element={<PrivateRoute><TeamRoster /></PrivateRoute>} />
         <Route path="/league/:leagueId/trades" element={<PrivateRoute><TradeCenter /></PrivateRoute>} />
         <Route path="/league/:leagueId/free-agents" element={<PrivateRoute><FreeAgents /></PrivateRoute>} />
         <Route path="/league/:leagueId/schedule" element={<PrivateRoute><Schedule /></PrivateRoute>} />

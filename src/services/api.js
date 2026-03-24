@@ -91,6 +91,7 @@ const api = {
   teams: {
     getById: (id) => apiClient.get(`/teams/${id}`),
     getByLeague: (leagueId) => apiClient.get(`/teams/league/${leagueId}`),
+    getLeagueTeams: (leagueId) => apiClient.get(`/teams/league/${leagueId}`),
     create: (data) => apiClient.post('/teams', data),
     update: (id, data) => apiClient.put(`/teams/${id}`, data),
     getSchedule: (id, season) => apiClient.get(`/teams/${id}/schedule${season ? `?season=${season}` : ''}`),
@@ -111,6 +112,7 @@ const api = {
     getByLeague: (leagueId, status) => apiClient.get(`/trades/league/${leagueId}${status ? `?status=${status}` : ''}`),
     getIncoming: (teamId) => apiClient.get(`/trades/team/${teamId}/incoming`),
     create: (data) => apiClient.post('/trades', data),
+    propose: (data) => apiClient.post('/trades', data),
     accept: (id) => apiClient.put(`/trades/${id}/accept`),
     decline: (id, message) => apiClient.put(`/trades/${id}/decline`, { message })
   },
@@ -128,6 +130,7 @@ const api = {
   // Games
   games: {
     getByLeague: (leagueId, params) => apiClient.get(`/games/league/${leagueId}`, { params }),
+    getLeagueGames: (leagueId, params) => apiClient.get(`/games/league/${leagueId}`, { params }),
     getById: (id) => apiClient.get(`/games/${id}`),
     getToday: (leagueId) => apiClient.get(`/games/today/${leagueId}`),
     getStandings: (leagueId, season) => apiClient.get(`/games/standings/${leagueId}${season ? `?season=${season}` : ''}`),
