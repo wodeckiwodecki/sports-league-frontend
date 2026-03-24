@@ -9,7 +9,12 @@ const CreateMultiplayerLeague = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
+  const SPORT_DEFAULTS = {
+    MLB: { maxTeams: 12 },
+    NBA: { maxTeams: 30 },
+  };
+
   const [formData, setFormData] = useState({
     name: '',
     sport: 'MLB',
@@ -19,10 +24,12 @@ const CreateMultiplayerLeague = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    if (name === 'sport') {
+      const defaults = SPORT_DEFAULTS[value] || {};
+      setFormData(prev => ({ ...prev, sport: value, ...defaults }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const getUserId = () => {
@@ -45,7 +52,7 @@ const CreateMultiplayerLeague = () => {
     setError('');
 
     const userId = getUserId();
-    
+
     if (!userId) {
       setError('User not authenticated. Please log in again.');
       setLoading(false);
@@ -56,14 +63,12 @@ const CreateMultiplayerLeague = () => {
       const leagueResponse = await api.leaguesV2.create({
         name: formData.name,
         sport: formData.sport,
+        userId,
         maxTeams: formData.maxTeams,
         teamName: formData.teamName
       });
 
       const leagueId = leagueResponse.data.league.id;
-      
-      // Skip import - players already exist
-      // Navigate directly to league
       navigate(`/league/${leagueId}`);
 
     } catch (err) {
@@ -80,6 +85,7 @@ const CreateMultiplayerLeague = () => {
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
             <h2 className="text-2xl font-bold text-white mb-2">Creating League...</h2>
+            <p className="text-gray-400">Setting up your {formData.sport} league</p>
           </div>
         </div>
       </div>
@@ -91,8 +97,8 @@ const CreateMultiplayerLeague = () => {
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <Trophy className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-          <h1 className="text-4xl font-bold text-white mb-2">Create League</h1>
-          <p className="text-gray-400">Set up your MLB fantasy league</p>
+          <h1 className="text-4xl font-bold text-white mb-2">Create Multiplayer League</h1>
+          <p className="text-gray-400">Set up a new fantasy league with friends</p>
         </div>
 
         {error && (
@@ -105,6 +111,30 @@ const CreateMultiplayerLeague = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-gray-800 rounded-lg p-6">
             <div className="space-y-4">
+
+              {/* Sport selector */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Sport *
+                </label>
+                <div className="flex gap-3">
+                  {['MLB', 'NBA'].map(s => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => handleChange({ target: { name: 'sport', value: s } })}
+                      className={`flex-1 py-3 rounded-lg font-semibold text-sm transition-colors ${
+                        formData.sport === s
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      {s === 'MLB' ? '⚾ MLB' : '🏀 NBA'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   League Name *
@@ -116,7 +146,7 @@ const CreateMultiplayerLeague = () => {
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500"
-                  placeholder="My Awesome MLB League"
+                  placeholder={`My Awesome ${formData.sport} League`}
                 />
               </div>
 
@@ -148,8 +178,10 @@ const CreateMultiplayerLeague = () => {
                   <option value={8}>8 Teams</option>
                   <option value={10}>10 Teams</option>
                   <option value={12}>12 Teams</option>
+                  {formData.sport === 'NBA' && <option value={30}>30 Teams</option>}
                 </select>
               </div>
+
             </div>
           </div>
 
@@ -157,7 +189,7 @@ const CreateMultiplayerLeague = () => {
             <button
               type="button"
               onClick={() => navigate('/dashboard')}
-              className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600"
+              className="px-6 py3 bg-gray-700 text-white rounded-lg hover:bg-gray-600"
             >
               Cancel
             </button>

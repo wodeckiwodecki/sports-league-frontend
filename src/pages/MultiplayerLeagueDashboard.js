@@ -25,16 +25,22 @@ const MultiplayerLeagueDashboard = () => {
 
   const loadLeagueData = async () => {
     try {
-      const [leagueRes, teamsRes] = await Promise.all([
-        api.leaguesV2.getById(id),
-        api.leaguesV2.getTeams(id)
-      ]);
+      console.log('🔍 Loading league ID:', id);
+      console.log('🔍 API URL:', process.env.REACT_APP_API_URL);
+      
+      const leagueRes = await api.leaguesV2.getById(id);
+      console.log('✅ League response:', leagueRes.data);
+      
+      const teamsRes = await api.leaguesV2.getTeams(id);
+      console.log('✅ Teams response:', teamsRes.data);
       
       setLeague(leagueRes.data);
       setTeams(teamsRes.data);
       setLoading(false);
     } catch (error) {
-      console.error('Error loading league:', error);
+      console.error('❌ Error loading league:', error);
+      console.error('❌ Error response:', error.response?.data);
+      console.error('❌ Error status:', error.response?.status);
       setLoading(false);
     }
   };
@@ -72,7 +78,7 @@ const MultiplayerLeagueDashboard = () => {
   }
 
   const settings = league.league_settings || {};
-  const isCommissioner = league.commissioner_id === user?.id;
+  const isCommissioner = league.commissioner_user_id === user?.id;
   const userTeam = teams.find(t => t.user_id === user?.id);
 
   return (

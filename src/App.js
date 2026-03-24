@@ -21,6 +21,8 @@ import PlayerProfile from './pages/PlayerProfile';
 // NEW Multiplayer Pages
 import CreateMultiplayerLeague from './pages/CreateMultiplayerLeague';
 import MultiplayerLeagueDashboard from './pages/MultiplayerLeagueDashboard';
+import PlayerPool from './pages/PlayerPool';
+import DraftRoomMultiplayer from './pages/DraftRoomMultiplayer';
 
 // Components
 import Navbar from './components/Navbar';
@@ -57,7 +59,6 @@ function AppRoutes() {
         <Route path="/leagues/create" element={<PrivateRoute><CreateLeague /></PrivateRoute>} />
         <Route path="/league/:leagueId" element={<PrivateRoute><LeagueDashboard /></PrivateRoute>} />
         <Route path="/league/:leagueId/team/:teamId" element={<PrivateRoute><TeamRoster /></PrivateRoute>} />
-        <Route path="/league/:leagueId/draft" element={<PrivateRoute><DraftRoom /></PrivateRoute>} />
         <Route path="/league/:leagueId/trades" element={<PrivateRoute><TradeCenter /></PrivateRoute>} />
         <Route path="/league/:leagueId/free-agents" element={<PrivateRoute><FreeAgents /></PrivateRoute>} />
         <Route path="/league/:leagueId/schedule" element={<PrivateRoute><Schedule /></PrivateRoute>} />
@@ -67,6 +68,8 @@ function AppRoutes() {
         {/* NEW Multiplayer League Routes */}
         <Route path="/multiplayer/create" element={<PrivateRoute><CreateMultiplayerLeague /></PrivateRoute>} />
         <Route path="/multiplayer-league/:id" element={<PrivateRoute><MultiplayerLeagueDashboard /></PrivateRoute>} />
+        <Route path="/league/:id/players" element={<PrivateRoute><PlayerPool /></PrivateRoute>} />
+        <Route path="/league/:id/draft" element={<PrivateRoute><DraftRoomMultiplayer /></PrivateRoute>} />
         
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/dashboard" />} />
