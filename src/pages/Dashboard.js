@@ -131,7 +131,7 @@ const Dashboard = () => {
             {leagues.map((league) => (
               <Link
                 key={league.id}
-                to={`/league/${league.id}`}
+                to={league.commissioner_user_id ? `/multiplayer-league/${league.id}` : `/league/${league.id}`}
                 className="border border-gray-200 rounded-lg p-5 hover:border-blue-500 hover:shadow-lg transition-all group"
               >
                 <div className="flex items-start justify-between mb-3">
