@@ -126,6 +126,22 @@ const DraftRoomMultiplayer = () => {
       </div>
     );
   }
+
+  if (!league) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-white text-xl mb-4">Failed to load draft room</p>
+          <button
+            onClick={() => { setLoading(true); loadDraftData(); }}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
   
   const pickInfo = getCurrentPickInfo();
   const myPick = isMyPick();
