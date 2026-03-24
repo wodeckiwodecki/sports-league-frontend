@@ -69,7 +69,7 @@ const CreateMultiplayerLeague = () => {
       });
 
       const leagueId = leagueResponse.data.league.id;
-      navigate(`/league/${leagueId}`);
+      navigate(`/multiplayer-league/${leagueId}`);
 
     } catch (err) {
       console.error('Error creating league:', err);

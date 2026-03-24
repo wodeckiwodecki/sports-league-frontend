@@ -310,7 +310,7 @@ const MultiplayerLeagueDashboard = () => {
                 </div>
                 <div className="text-gray-400">
                   <p className="text-white mb-1">Players Imported</p>
-                  <p className="text-xs">1,195 MLB players loaded</p>
+                  <p className="text-xs">{league.sport} player pool ready</p>
                 </div>
               </div>
             </div>
