@@ -30,12 +30,18 @@ const MultiplayerLeagueDashboard = () => {
       
       const leagueRes = await api.leaguesV2.getById(id);
       console.log('✅ League response:', leagueRes.data);
-      
-      const teamsRes = await api.leaguesV2.getTeams(id);
-      console.log('✅ Teams response:', teamsRes.data);
-      
-      setLeague(leagueRes.data);
-      setTeams(teamsRes.data);
+
+      // Details endpoint returns { league, teams, userTeam, isCommissioner }
+      const data = leagueRes.data;
+      if (data.league) {
+        setLeague(data.league);
+        setTeams(data.teams || []);
+      } else {
+        // Fallback: flat response
+        setLeague(data);
+        const teamsRes = await api.leaguesV2.getTeams(id);
+        setTeams(teamsRes.data);
+      }
       setLoading(false);
     } catch (error) {
       console.error('❌ Error loading league:', error);
